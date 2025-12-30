@@ -1,0 +1,8 @@
+
+{
+  "name": "DayJiro",
+  "description": "A neubrutalist roadmap and habit-tracking app to master any skill using AI-generated daily tasks and a streak-based progression system.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
