@@ -3,13 +3,14 @@ import React, { useState } from 'react';
 import { STYLES } from '../constants';
 
 interface OnboardingViewProps {
-  onComplete: (skill: string, duration: number, role: string) => void;
+  onComplete: (skill: string, duration: number, role: string, apiKey?: string) => void;
 }
 
 const OnboardingView: React.FC<OnboardingViewProps> = ({ onComplete }) => {
   const [skill, setSkill] = useState('');
   const [role, setRole] = useState('');
   const [duration, setDuration] = useState(30);
+  const [apiKey, setApiKey] = useState('');
 
   return (
     <div className="py-8 space-y-10">
@@ -56,8 +57,18 @@ const OnboardingView: React.FC<OnboardingViewProps> = ({ onComplete }) => {
           </div>
         </div>
 
+        <div>
+          <label className={STYLES.label}>Gemini API Key (kept local)</label>
+          <input
+            className={STYLES.input}
+            placeholder="Enter your Gemini API key"
+            value={apiKey}
+            onChange={(e) => setApiKey(e.target.value)}
+          />
+        </div>
+
         <button 
-          onClick={() => skill && onComplete(skill, duration, role)}
+          onClick={() => skill && onComplete(skill, duration, role, apiKey)}
           className={STYLES.buttonPrimary + " w-full"}
           disabled={!skill}
         >

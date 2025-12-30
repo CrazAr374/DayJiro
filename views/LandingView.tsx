@@ -1,12 +1,13 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { STYLES, Icons, COLORS } from '../constants';
 
 interface LandingViewProps {
-  onStart: () => void;
+  onStart: (email: string) => void;
 }
 
 const LandingView: React.FC<LandingViewProps> = ({ onStart }) => {
+  const [email, setEmail] = useState('');
   return (
     <div className="flex flex-col -mx-6 bg-[#FDFDF5]">
       {/* SECTION 1 — HERO */}
@@ -19,13 +20,22 @@ const LandingView: React.FC<LandingViewProps> = ({ onStart }) => {
             <p className="text-xl md:text-2xl font-bold leading-tight max-w-md">
               Build skills with AI-generated roadmaps, daily tasks, and streaks that keep you consistent.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 pt-4">
-              <button onClick={onStart} className={STYLES.buttonPrimary + " px-10"}>
-                Start Building
-              </button>
+            <div className="space-y-4 pt-4">
+              <input
+                type="email"
+                className={STYLES.input}
+                placeholder="Your email address"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+              <div className="flex flex-col sm:flex-row gap-4">
+                <button onClick={() => onStart(email)} className={STYLES.buttonPrimary + " px-10"}>
+                  Start Building
+                </button>
               <button onClick={() => window.scrollTo({top: 800, behavior: 'smooth'})} className={STYLES.buttonOutline}>
                 See How It Works
               </button>
+              </div>
             </div>
           </div>
         </div>
@@ -141,9 +151,18 @@ const LandingView: React.FC<LandingViewProps> = ({ onStart }) => {
           <h2 className="text-5xl md:text-7xl font-black uppercase tracking-tighter">
             Start building today.
           </h2>
-          <button onClick={onStart} className={STYLES.buttonPrimary + " px-12 py-6 text-2xl"}>
-            Create your roadmap
-          </button>
+          <div className="max-w-sm mx-auto">
+            <input
+              type="email"
+              className={STYLES.input + " mb-4"}
+              placeholder="Your email address"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+            <button onClick={() => onStart(email)} className={STYLES.buttonPrimary + " px-12 py-6 text-2xl w-full"}>
+              Create your roadmap
+            </button>
+          </div>
           <p className="font-black text-sm uppercase tracking-widest mt-4">No fluff. Just execution.</p>
         </div>
       </section>

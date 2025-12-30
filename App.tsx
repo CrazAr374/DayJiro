@@ -4,7 +4,7 @@ import { User, Roadmap, Streak, RoadmapDay } from './types';
 import { dbService } from './services/dbService';
 import { generateRoadmap } from './services/geminiService';
 import { STYLES, Icons, COLORS } from './constants';
-import { signInOrCreate, signOut as authSignOut, onAuthChange } from './services/authService';
+import { signInOrCreate, signOut as authSignOut, onAuthChange, sendSignInLink, isSignInLink, completeSignInFromLink } from './services/authService';
 
 // --- Views ---
 import LandingView from './views/LandingView';
@@ -56,9 +56,51 @@ const App: React.FC = () => {
       }
     });
 
+    // If the app was opened via an email sign-in link, complete sign-in
+    (async () => {
+      try {
+        if (isSignInLink(window.location.href)) {
+          setLoading(true);
+          const fbUser = await completeSignInFromLink(window.location.href);
+          const existingLocal = dbService.getUser();
+          let newUser: User;
+          if (existingLocal && existingLocal.uid === fbUser.uid) {
+            newUser = existingLocal;
+          } else {
+            newUser = { uid: fbUser.uid, email: fbUser.email || '', onboardingComplete: false };
+            dbService.saveUser(newUser);
+          }
+          setUser(newUser);
+          setView(newUser.onboardingComplete ? 'dashboard' : 'onboarding');
+        }
+      } catch (err) {
+        console.error('Email link sign-in error', err);
+      } finally {
+        setLoading(false);
+      }
+    })();
+
     setLoading(false);
     return () => unsub();
   }, []);
+
+  const handleStartCTA = async (email: string) => {
+    if (!email) {
+      alert('Please enter your email to get started');
+      return;
+    }
+    try {
+      setLoading(true);
+      await sendSignInLink(email);
+      alert('Sign-in link sent. Check your email to continue.');
+    } catch (err) {
+      console.error('sendSignInLink error', err);
+      const msg = err instanceof Error ? err.message : String(err);
+      alert(`Error sending sign-in link: ${msg}`);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleLogin = async (email: string, password: string, apiKey: string) => {
     try {
@@ -89,8 +131,15 @@ const App: React.FC = () => {
     setView('landing');
   };
 
-  const handleCompleteOnboarding = async (skill: string, duration: number, role: string) => {
-    if (!user || !user.apiKey) return;
+  const handleCompleteOnboarding = async (skill: string, duration: number, role: string, apiKey?: string) => {
+    if (!user) return;
+    if (apiKey) {
+      user.apiKey = apiKey;
+    }
+    if (!user.apiKey) {
+      alert('A Gemini API key is required to generate a roadmap.');
+      return;
+    }
     
     setLoading(true);
     try {
@@ -175,7 +224,7 @@ const App: React.FC = () => {
       </header>
 
       <main className="p-6">
-        {view === 'landing' && <LandingView onStart={() => setView('login')} />}
+        {view === 'landing' && <LandingView onStart={handleStartCTA} />}
         {view === 'login' && <LoginView onLogin={handleLogin} />}
         {view === 'onboarding' && <OnboardingView onComplete={handleCompleteOnboarding} />}
         {view === 'dashboard' && roadmap && (

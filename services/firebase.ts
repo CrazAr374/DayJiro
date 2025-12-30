@@ -11,6 +11,11 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID || ''
 };
 
+// Basic validation to help surface misconfigured envs early
+if (!firebaseConfig.apiKey || !firebaseConfig.authDomain || !firebaseConfig.projectId) {
+  console.warn('Firebase config appears incomplete. Check your VITE_FIREBASE_* env vars in .env.local');
+}
+
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 

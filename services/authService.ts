@@ -30,13 +30,26 @@ export const onAuthChange = (cb: (user: FirebaseUser | null) => void) => {
 };
 
 export const sendSignInLink = async (email: string) => {
+  // basic email format check
+  const emailRegex = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+  if (!emailRegex.test(email)) {
+    throw new Error('Invalid email address');
+  }
+
   const actionCodeSettings = {
     // After clicking the link, return to the app root
     url: window.location.origin + '/',
     handleCodeInApp: true,
   };
-  await sendSignInLinkToEmail(auth, email, actionCodeSettings);
-  window.localStorage.setItem('emailForSignIn', email);
+
+  try {
+    await sendSignInLinkToEmail(auth, email, actionCodeSettings);
+    window.localStorage.setItem('emailForSignIn', email);
+  } catch (err: any) {
+    // Add helpful context and rethrow
+    const message = err?.message || String(err);
+    throw new Error(`Failed to send sign-in link: ${message}`);
+  }
 };
 
 export const isSignInLink = (url: string) => {
